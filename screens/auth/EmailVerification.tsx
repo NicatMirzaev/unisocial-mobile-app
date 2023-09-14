@@ -15,7 +15,7 @@ import {
   useBlurOnFulfill,
   useClearByFocusCell,
 } from "react-native-confirmation-code-field";
-import { Button } from "react-native-paper";
+import { Button, Text as PaperText } from "react-native-paper";
 import { fetchData } from "../../lib/helpers";
 import { ALERT_TYPE, Toast } from "react-native-alert-notification";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -143,7 +143,12 @@ const EmailVerification = ({ route }: Props) => {
 
   return (
     <SafeAreaView style={styles.root}>
-      <Text style={styles.title}>ვერიფიკაცია</Text>
+      <PaperText
+        variant="headlineSmall"
+        style={{ marginVertical: 20, marginLeft: "auto", marginRight: "auto" }}
+      >
+        ვერიფიკაცია
+      </PaperText>
       <Text style={styles.subTitle}>
         გთხოვთ შეიყვანოთ თქვენ მიერ მითითებული{"\n"}
         მეილზე გამოგზავნილი კოდი
