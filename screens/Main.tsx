@@ -11,6 +11,7 @@ const Tab = createBottomTabNavigator();
 export default function Main() {
   return (
     <Tab.Navigator
+      screenOptions={{ headerShown: false }}
       tabBar={({ navigation, state, descriptors, insets }) => (
         <BottomNavigation.Bar
           navigationState={state}

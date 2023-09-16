@@ -8,6 +8,7 @@ import EmailVerification from "./auth/EmailVerification";
 import Main from "./Main";
 import { CombinedDarkTheme, CombinedDefaultTheme } from "../themes";
 import { useThemeContext } from "../context/theme";
+import { ImagesView } from "./ImagesView";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -26,6 +27,11 @@ export default function Screens() {
           }}
         >
           <Stack.Screen name="Main" component={Main} />
+          <Stack.Screen
+            name="ImagesView"
+            component={ImagesView}
+            options={{ gestureEnabled: false }}
+          />
         </Stack.Navigator>
       ) : (
         <Stack.Navigator

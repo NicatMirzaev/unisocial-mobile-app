@@ -3,12 +3,19 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   EmailVerification: { email: string };
+  ImagesView: { images: Photo[]; index: number };
 };
 
 export interface User {
   _id: string;
   fullName: string;
   profileImg: string;
+}
+
+export interface Photo {
+  _id: string;
+  _userId: string;
+  url: string;
 }
 
 export type UserContextType = {

@@ -29,3 +29,10 @@ export const fetchData = async (
     throw error;
   });
 };
+
+export const getInitials = (fullName: string) => {
+  if (!fullName) return "";
+  const [firstName, lastName] = fullName.split(" ");
+
+  return firstName[0] + lastName[0];
+};
