@@ -98,7 +98,7 @@ export const ImagesView = () => {
       )}
       <AwesomeGallery
         ref={gallery}
-        data={params.images.map((photo) => ({ uri: photo.url }))}
+        data={params.images.map((photo) => ({ id: photo._id, uri: photo.url }))}
         keyExtractor={(item: any) => item._id}
         renderItem={renderItem}
         initialIndex={params.index}

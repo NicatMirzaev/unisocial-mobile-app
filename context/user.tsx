@@ -19,11 +19,15 @@ const UserProvider = ({
   children: ReactNode;
   defaultUser: User | null;
 }) => {
+  const [mounted, setMounted] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     setUser(defaultUser);
+    setMounted(true);
   }, [defaultUser]);
+
+  if (!mounted) return null;
 
   return (
     <UserContext.Provider value={{ user, setUser }}>
