@@ -32,7 +32,16 @@ export const fetchData = async (
 
 export const getInitials = (fullName: string) => {
   if (!fullName) return "";
-  const [firstName, lastName] = fullName.split(" ");
 
-  return firstName[0] + lastName[0];
+  const names = fullName.split(" ");
+  let initials = "";
+
+  for (let i = 0; i < names.length; i++) {
+    const name = names[i].trim();
+    if (name) {
+      initials += name.charAt(0);
+    }
+  }
+
+  return initials;
 };

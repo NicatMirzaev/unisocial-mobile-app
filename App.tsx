@@ -5,7 +5,7 @@ import { PaperProvider } from "react-native-paper";
 import { AlertNotificationRoot } from "react-native-alert-notification";
 import Screens from "./screens/Screens";
 import UserProvider from "./context/user";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchData } from "./lib/helpers";
 import { CombinedDarkTheme, CombinedDefaultTheme } from "./themes";
 import { ThemeContext } from "./context/theme";
@@ -50,6 +50,7 @@ export default function App() {
   if (!appIsReady) {
     return null;
   }
+
   return (
     <ThemeContext.Provider value={preferences}>
       <GestureHandlerRootView style={{ flex: 1 }}>

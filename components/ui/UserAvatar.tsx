@@ -2,7 +2,7 @@ import { Avatar } from "react-native-paper";
 import { getInitials } from "../../lib/helpers";
 
 type Props = {
-  imgSource: string | null;
+  imgSource: string;
   fullName: string;
   size?: number;
 };

@@ -10,6 +10,7 @@ export interface User {
   _id: string;
   fullName: string;
   profileImg: string;
+  program: string;
 }
 
 export interface Photo {
