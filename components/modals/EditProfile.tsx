@@ -12,7 +12,6 @@ import { useUser } from "../../context/user";
 import { ALERT_TYPE, Toast } from "react-native-alert-notification";
 
 interface Props {
-  visible: boolean;
   onDismiss: () => void;
   user: User;
 }
@@ -162,9 +161,3 @@ export const EditProfile = ({ onDismiss, user }: Props) => {
     </Portal>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});

@@ -24,9 +24,10 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useEffect, useState } from "react";
 import { fetchData } from "../lib/helpers";
 import { Photo, User } from "../types";
-import { NavigationProp } from "@react-navigation/native";
+import { NavigationProp, useIsFocused } from "@react-navigation/native";
 import { EditProfile } from "../components/modals/EditProfile";
 import { ALERT_TYPE, Toast } from "react-native-alert-notification";
+import { SettingsModal } from "../components/modals/SettingsModal";
 
 const { width, height } = Dimensions.get("window");
 
@@ -36,23 +37,27 @@ type Props = {
 
 export default function MyProfile({ navigation }: Props) {
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [showSettingModal, setShowSettingModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const isFocused = useIsFocused();
   const { user } = useUser();
 
   useEffect(() => {
-    if (user?._id) {
-      fetchData(`/photos/${user?._id}`)
+    setPhotos([]);
+    if (user?._id && isFocused) {
+      setLoading(true);
+      fetchData(`/photos/get/${user?._id}`)
         .then((data) => {
           if (data.success) {
             setPhotos(data.data);
           }
         })
-        .catch(() => setPhotos([]));
-    } else {
-      setPhotos([]);
+        .catch(() => setPhotos([]))
+        .finally(() => setLoading(false));
     }
-  }, [user]);
+  }, [user, isFocused]);
 
   const uploadImage = async (asset: ImagePicker.ImagePickerAsset) => {
     setUploading(true);
@@ -110,10 +115,12 @@ export default function MyProfile({ navigation }: Props) {
     <>
       {showEditModal && (
         <EditProfile
-          visible={showEditModal}
           onDismiss={() => setShowEditModal(false)}
           user={user as User}
         />
+      )}
+      {showSettingModal && (
+        <SettingsModal onDismiss={() => setShowSettingModal(false)} />
       )}
       <Appbar.Header>
         <View
@@ -137,7 +144,7 @@ export default function MyProfile({ navigation }: Props) {
           icon="account-edit"
           onPress={() => setShowEditModal(true)}
         />
-        <Appbar.Action icon="cog" onPress={() => {}} />
+        <Appbar.Action icon="cog" onPress={() => setShowSettingModal(true)} />
       </Appbar.Header>
       <View style={styles.container}>
         {uploading && (
@@ -216,18 +223,33 @@ export default function MyProfile({ navigation }: Props) {
             />
           ) : (
             <>
-              <Image
-                source={require("../assets/no-photos.png")}
-                style={{
-                  width: 164,
-                  height: 164,
-                  marginLeft: "auto",
-                  marginRight: "auto",
-                }}
-              />
-              <Text variant="titleMedium" style={{ textAlign: "center" }}>
-                ფოტოები არ მოიძებნა.
-              </Text>
+              {loading ? (
+                <>
+                  <ActivityIndicator
+                    style={{
+                      width: 164,
+                      height: 164,
+                      marginLeft: "auto",
+                      marginRight: "auto",
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <Image
+                    source={require("../assets/no-photos.png")}
+                    style={{
+                      width: 164,
+                      height: 164,
+                      marginLeft: "auto",
+                      marginRight: "auto",
+                    }}
+                  />
+                  <Text variant="titleMedium" style={{ textAlign: "center" }}>
+                    ფოტოები არ მოიძებნა.
+                  </Text>
+                </>
+              )}
             </>
           )}
         </View>

@@ -6,7 +6,7 @@ import {
   NavigationProp,
 } from "@react-navigation/native";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { StatusBar, StyleSheet, Text, View } from "react-native";
+import { StatusBar, StyleSheet, View } from "react-native";
 import AwesomeGallery, {
   GalleryRef,
   RenderItemInfo,
@@ -21,7 +21,10 @@ import Animated, {
   FadeOutUp,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { IconButton } from "react-native-paper";
+import { Dialog, IconButton, Text, Portal, Button } from "react-native-paper";
+import { fetchData } from "../lib/helpers";
+import { ALERT_TYPE, Toast } from "react-native-alert-notification";
+import { useUser } from "../context/user";
 
 const renderItem = ({
   item,
@@ -41,12 +44,14 @@ const renderItem = ({
 };
 
 export const ImagesView = () => {
+  const { user, setUser } = useUser();
   const { top, bottom } = useSafeAreaInsets();
   const { setParams, goBack } =
     useNavigation<NavigationProp<RootStackParamList, "ImagesView">>();
   const isFocused = useIsFocused();
   const { params } = useRoute<RouteProp<RootStackParamList, "ImagesView">>();
   const gallery = useRef<GalleryRef>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -74,8 +79,48 @@ export const ImagesView = () => {
     setInfoVisible(!infoVisible);
   };
 
+  const deletePhoto = () => {
+    setIsDeleting(false);
+    const photo = params.images[params.index];
+    fetchData("/photos/delete", { photoId: photo._id }, "POST")
+      .then((data) => {
+        if (photo._id === user?._id) {
+          setUser({ ...user, profileImg: "" });
+        }
+        Toast.show({
+          type: ALERT_TYPE.SUCCESS,
+          title: "შეტყობინება",
+          textBody: data.message,
+        });
+        setParams({
+          images: params.images.filter((image) => image._id !== photo._id),
+          index: params.index,
+        });
+      })
+      .catch(({ data }) => {
+        Toast.show({
+          type: ALERT_TYPE.DANGER,
+          title: "შეცდომა",
+          textBody: data.message,
+        });
+      });
+  };
+
   return (
     <View style={styles.container}>
+      {isDeleting && (
+        <Portal>
+          <Dialog visible={true} onDismiss={() => setIsDeleting(false)}>
+            <Dialog.Content>
+              <Text variant="bodyMedium">ნამდვილად გსურთ წაშლა?</Text>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={() => setIsDeleting(false)}>არა</Button>
+              <Button onPress={deletePhoto}>დიახ</Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
+      )}
       {infoVisible && (
         <Animated.View
           entering={mounted ? FadeInUp.duration(250) : undefined}
@@ -131,7 +176,12 @@ export const ImagesView = () => {
           ]}
         >
           <View style={styles.buttonsContainer}>
-            <IconButton icon={"delete"} size={30} iconColor="red" />
+            <IconButton
+              icon={"delete"}
+              size={30}
+              iconColor="red"
+              onPress={() => setIsDeleting(true)}
+            />
           </View>
         </Animated.View>
       )}
