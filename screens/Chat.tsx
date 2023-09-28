@@ -3,11 +3,5 @@ import { useThemeContext } from "../context/theme";
 
 export default function Chat() {
   const { theme, toggleTheme } = useThemeContext();
-  return (
-    <Switch
-      color={"red"}
-      value={theme === "dark"}
-      onValueChange={toggleTheme}
-    />
-  );
+  return null;
 }

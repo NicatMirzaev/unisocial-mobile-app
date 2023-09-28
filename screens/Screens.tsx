@@ -9,12 +9,30 @@ import Main from "./Main";
 import { CombinedDarkTheme, CombinedDefaultTheme } from "../themes";
 import { useThemeContext } from "../context/theme";
 import { ImagesView } from "./ImagesView";
+import { useEffect, useState } from "react";
+import * as SecureStore from "expo-secure-store";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function Screens() {
+  const [token, setToken] = useState<string | undefined>(undefined);
   const { user } = useUser();
   const { theme } = useThemeContext();
+
+  useEffect(() => {
+    const getToken = async () => {
+      try {
+        const token = await SecureStore.getItemAsync("token");
+        setToken(token || "");
+      } catch (error) {
+        setToken("");
+      }
+    };
+
+    getToken();
+  }, []);
+
+  if (token === undefined) return null;
 
   return (
     <NavigationContainer
@@ -26,7 +44,11 @@ export default function Screens() {
             headerShown: false,
           }}
         >
-          <Stack.Screen name="Main" component={Main} />
+          <Stack.Screen
+            name="Main"
+            component={Main}
+            initialParams={{ token }}
+          />
           <Stack.Screen
             name="ImagesView"
             component={ImagesView}

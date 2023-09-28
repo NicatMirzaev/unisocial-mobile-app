@@ -138,7 +138,7 @@ export const SettingsModal = ({ onDismiss }: Props) => {
         </TouchableOpacity>
       </>
     );
-  }, [mode, values, submitting]);
+  }, [mode, theme, values, submitting]);
 
   return (
     <Portal>
