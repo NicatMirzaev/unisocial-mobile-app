@@ -4,6 +4,7 @@ export type RootStackParamList = {
   Register: undefined;
   EmailVerification: { email: string };
   ImagesView: { images: Photo[]; index: number };
+  Profile: { userId: string };
 };
 
 export interface User {

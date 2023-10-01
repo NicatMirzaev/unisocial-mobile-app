@@ -11,6 +11,7 @@ import { useThemeContext } from "../context/theme";
 import { ImagesView } from "./ImagesView";
 import { useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
+import Profile from "./Profile";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -54,6 +55,7 @@ export default function Screens() {
             component={ImagesView}
             options={{ gestureEnabled: false }}
           />
+          <Stack.Screen name="Profile" component={Profile} />
         </Stack.Navigator>
       ) : !user ? (
         <Stack.Navigator

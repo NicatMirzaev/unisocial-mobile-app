@@ -9,10 +9,14 @@ import { Appbar, Button, Searchbar, Surface, Text } from "react-native-paper";
 import UserAvatar from "../components/ui/UserAvatar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useWebSocket } from "../context/ws";
-import { useIsFocused } from "@react-navigation/native";
+import { NavigationProp, useIsFocused } from "@react-navigation/native";
 import { User } from "../types";
 
-export default function Students() {
+interface Props {
+  navigation: NavigationProp<any, any>;
+}
+
+export default function Students({ navigation }: Props) {
   const isFocused = useIsFocused();
   const [searchQuery, setSearchQuery] = useState("");
   const { nearbyUsers, sendJsonMessage } = useWebSocket();
@@ -57,7 +61,12 @@ export default function Students() {
         data={filtered}
         renderItem={({ item }: { item: User }) => (
           <Surface style={styles.surface} elevation={1}>
-            <TouchableOpacity style={styles.profileContainer}>
+            <TouchableOpacity
+              style={styles.profileContainer}
+              onPress={() =>
+                navigation.navigate("Profile", { userId: item._id })
+              }
+            >
               <View>
                 <UserAvatar
                   imgSource={item.profileImg}
