@@ -29,16 +29,16 @@ export default function Screens() {
       }
     };
 
-    getToken();
-  }, []);
-
-  if (token === undefined) return null;
+    if (user) {
+      getToken();
+    }
+  }, [user]);
 
   return (
     <NavigationContainer
       theme={theme === "dark" ? CombinedDarkTheme : CombinedDefaultTheme}
     >
-      {user ? (
+      {user && token !== undefined ? (
         <Stack.Navigator
           screenOptions={{
             headerShown: false,
@@ -55,7 +55,7 @@ export default function Screens() {
             options={{ gestureEnabled: false }}
           />
         </Stack.Navigator>
-      ) : (
+      ) : !user ? (
         <Stack.Navigator
           screenOptions={{
             headerShown: false,
@@ -69,7 +69,7 @@ export default function Screens() {
             initialParams={{ email: "" }}
           />
         </Stack.Navigator>
-      )}
+      ) : null}
     </NavigationContainer>
   );
 }

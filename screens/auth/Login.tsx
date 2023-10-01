@@ -26,9 +26,9 @@ const LoginScreen = ({ navigation }: Props) => {
   const onSubmit = () => {
     setSubmitting(true);
     fetchData("/auth/login", { email, password }, "POST", false)
-      .then((data) => {
+      .then(async (data) => {
         if (data.success) {
-          SecureStore.setItemAsync("token", data.token);
+          await SecureStore.setItemAsync("token", data.token);
           setUser(data.user);
         }
       })

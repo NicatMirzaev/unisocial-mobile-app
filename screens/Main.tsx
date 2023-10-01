@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { BottomNavigation } from "react-native-paper";
+import * as Location from "expo-location";
 import Chat from "./Chat";
 import Students from "./Students";
 import MyProfile from "./MyProfile";
@@ -56,6 +57,34 @@ export default function Main({ route }: Props) {
       },
     }
   );
+
+  useEffect(() => {
+    (async () => {
+      // Konum izni al
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission denied");
+        return;
+      }
+
+      // Konumu izlemeye başla
+      let location = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.Highest,
+          timeInterval: 5000,
+        },
+        (newLocation) => {
+          sendJsonMessage({
+            type: "updateLocation",
+            data: {
+              lat: newLocation.coords.latitude,
+              long: newLocation.coords.longitude,
+            },
+          });
+        }
+      );
+    })();
+  }, []);
 
   return (
     <WebSocketContext.Provider value={{ nearbyUsers, sendJsonMessage }}>

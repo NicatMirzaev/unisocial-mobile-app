@@ -124,9 +124,9 @@ const EmailVerification = ({ route }: Props) => {
     if (!email) return;
     setSubmitting(true);
     fetchData("/auth/verify", { email, code: value }, "POST", false)
-      .then((data) => {
+      .then(async (data) => {
         if (data.success) {
-          SecureStore.setItemAsync("token", data.token);
+          await SecureStore.setItemAsync("token", data.token);
           setUser(data.user);
         }
       })
