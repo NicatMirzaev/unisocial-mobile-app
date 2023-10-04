@@ -12,6 +12,7 @@ import useWebSocket, { ReadyState } from "react-native-use-websocket";
 import { WebSocketContext } from "../context/ws";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types";
+import { IMessage } from "react-native-gifted-chat";
 
 const Tab = createBottomTabNavigator();
 
@@ -19,6 +20,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "Main">;
 
 export default function Main({ route }: Props) {
   const [nearbyUsers, setNearbyUsers] = useState([]);
+  const [messages, setMessages] = useState<IMessage[]>([]);
   const { sendJsonMessage } = useWebSocket(
     process.env.EXPO_PUBLIC_WS_URL as string,
     {
@@ -43,6 +45,10 @@ export default function Main({ route }: Props) {
           switch (data.type) {
             case "nearbyUsers": {
               setNearbyUsers(data.data);
+              break;
+            }
+            case "message": {
+              setMessages((prev) => [...prev, data.data]);
               break;
             }
           }
@@ -87,7 +93,13 @@ export default function Main({ route }: Props) {
   }, []);
 
   return (
-    <WebSocketContext.Provider value={{ nearbyUsers, sendJsonMessage }}>
+    <WebSocketContext.Provider
+      value={{
+        nearbyUsers,
+        messages,
+        sendJsonMessage,
+      }}
+    >
       <Tab.Navigator
         screenOptions={{ headerShown: false }}
         tabBar={({ navigation, state, descriptors, insets }) => (
