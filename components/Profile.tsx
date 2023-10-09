@@ -121,7 +121,6 @@ export default function UserProfile({ navigation, userId, data }: Props) {
             <View style={styles.profileContainer}>
               <TouchableOpacity
                 onPress={() => {
-                  console.log(userData.profileImg);
                   navigation.navigate("ImagesView", {
                     index: 0,
                     images: userData.profileImg

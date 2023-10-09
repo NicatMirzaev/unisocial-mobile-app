@@ -151,7 +151,7 @@ const EmailVerification = ({ route }: Props) => {
       </PaperText>
       <Text style={styles.subTitle}>
         გთხოვთ შეიყვანოთ თქვენ მიერ მითითებული{"\n"}
-        მეილზე გამოგზავნილი კოდი
+        მეილზე გამოგზავნილი კოდი. კოდი აქტიური იქნება 5 წუთის განმავლობაში.
       </Text>
 
       <CodeField

@@ -13,12 +13,14 @@ import { WebSocketContext } from "../context/ws";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types";
 import { IMessage } from "react-native-gifted-chat";
+import { useUser } from "../context/user";
 
 const Tab = createBottomTabNavigator();
 
 type Props = NativeStackScreenProps<RootStackParamList, "Main">;
 
 export default function Main({ route }: Props) {
+  const { user } = useUser();
   const [nearbyUsers, setNearbyUsers] = useState([]);
   const [messages, setMessages] = useState<IMessage[]>([]);
   const { sendJsonMessage } = useWebSocket(
@@ -48,7 +50,24 @@ export default function Main({ route }: Props) {
               break;
             }
             case "message": {
-              setMessages((prev) => [...prev, data.data]);
+              if (data.data.tempId) {
+                setMessages((prev) => {
+                  const temp = [...prev];
+                  const index = temp.findIndex(
+                    (item) => item._id === data.data.tempId
+                  );
+
+                  if (index != -1) {
+                    temp[index] = {
+                      ...data.data,
+                      createdAt: temp[index].createdAt,
+                    };
+                  }
+                  return temp;
+                });
+              } else {
+                setMessages((prev) => [...prev, data.data]);
+              }
               break;
             }
           }
@@ -66,14 +85,12 @@ export default function Main({ route }: Props) {
 
   useEffect(() => {
     (async () => {
-      // Konum izni al
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         console.log("Permission denied");
         return;
       }
 
-      // Konumu izlemeye başla
       let location = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.Highest,
@@ -97,6 +114,7 @@ export default function Main({ route }: Props) {
       value={{
         nearbyUsers,
         messages,
+        setMessages,
         sendJsonMessage,
       }}
     >

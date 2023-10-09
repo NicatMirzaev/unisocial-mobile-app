@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
+import { useCallback } from "react";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+import { Dimensions, Platform, StyleSheet, View } from "react-native";
 import {
   GiftedChat,
   IMessage,
@@ -9,15 +11,23 @@ import {
   ComposerProps,
   Composer,
   Send,
+  MessageVideoProps,
 } from "react-native-gifted-chat";
 import { Appbar, IconButton, useTheme } from "react-native-paper";
 import { useThemeContext } from "../context/theme";
 import { useUser } from "../context/user";
 import { useWebSocket } from "../context/ws";
+import { ALERT_TYPE, Toast } from "react-native-alert-notification";
+import { NavigationProp } from "@react-navigation/native";
+import { ResizeMode, Video } from "expo-av";
 
-export default function Chat() {
+interface Props {
+  navigation: NavigationProp<any, any>;
+}
+
+export default function Chat({ navigation }: Props) {
   const { user } = useUser();
-  const { messages, sendJsonMessage } = useWebSocket();
+  const { messages, setMessages, sendJsonMessage } = useWebSocket();
   const themeColors = useTheme();
   const { theme } = useThemeContext();
 
@@ -38,13 +48,20 @@ export default function Chat() {
   };
 
   const onSend = useCallback((message: IMessage[] = []) => {
-    sendJsonMessage({ type: "message", data: message[0].text });
+    setMessages((prev: IMessage[]) => [
+      ...prev,
+      ...message.map((message) => ({ ...message, pending: true })),
+    ]);
+    sendJsonMessage({
+      type: "message",
+      data: { type: "text", message: message[0].text, tempId: message[0]._id },
+    });
   }, []);
 
   const renderSend = useCallback((props: SendProps<IMessage>) => {
     return (
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <IconButton icon="image" size={24} onPress={() => {}} />
+        <IconButton icon="image" size={24} onPress={pickImage} />
         <Send {...props} sendButtonProps={{ style: { margin: 0 } }}>
           <IconButton icon={"send"} size={24} />
         </Send>
@@ -64,6 +81,70 @@ export default function Chat() {
     [theme]
   );
 
+  const renderVideo = useCallback((props: MessageVideoProps<IMessage>) => {
+    return (
+      <Video
+        style={styles.video}
+        source={{
+          uri: props.currentMessage?.video as string,
+        }}
+        useNativeControls
+        resizeMode={ResizeMode.COVER}
+        isLooping
+      />
+    );
+  }, []);
+
+  const sendMediaToServer = (media: ImagePicker.ImagePickerAsset) => {
+    const msg = {
+      _id: Math.random().toString(16).slice(2),
+      createdAt: new Date(),
+      user: {
+        _id: user?._id,
+        name: user?.fullName,
+        avatar: user?.profileImg,
+      },
+      image: "",
+      pending: true,
+    };
+    setMessages((prev: IMessage[]) => [...prev, msg]);
+    FileSystem.readAsStringAsync(media.uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    })
+      .then((base64Data) => {
+        const message = {
+          type: "message",
+          data: {
+            type: "media",
+            base64: base64Data,
+            contentType: media.type,
+            tempId: msg._id,
+          },
+        };
+        sendJsonMessage(message);
+      })
+      .catch((error) => {
+        Toast.show({
+          type: ALERT_TYPE.DANGER,
+          title: "შეცდომა",
+          textBody: "ფოტო / ვიდეო ვერ გამოიგზავნა.",
+        });
+      });
+  };
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      aspect: [16, 9],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const asset = result.assets[0];
+      sendMediaToServer(asset);
+    }
+  };
+
   return (
     <View style={{ flex: 1, marginBottom: 10 }}>
       <Appbar.Header>
@@ -78,7 +159,11 @@ export default function Chat() {
         keyboardShouldPersistTaps="never"
         alwaysShowSend
         renderSend={renderSend}
+        onPressAvatar={(user) =>
+          navigation.navigate("Profile", { userId: user._id })
+        }
         renderComposer={renderComposer}
+        renderMessageVideo={renderVideo}
         messagesContainerStyle={{ paddingBottom: 10 }}
         renderUsernameOnMessage
         onSend={onSend}
@@ -93,3 +178,13 @@ export default function Chat() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  video: {
+    alignSelf: "center",
+    width: Dimensions.get("window").width / 2,
+    height: Dimensions.get("window").width / 2,
+    borderRadius: 15,
+    marginBottom: 5,
+  },
+});
