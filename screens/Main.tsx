@@ -8,7 +8,7 @@ import MyProfile from "./MyProfile";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { CommonActions } from "@react-navigation/native";
 import { ALERT_TYPE, Toast } from "react-native-alert-notification";
-import useWebSocket, { ReadyState } from "react-native-use-websocket";
+import useWebSocket from "react-native-use-websocket";
 import { WebSocketContext } from "../context/ws";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types";
@@ -20,7 +20,6 @@ const Tab = createBottomTabNavigator();
 type Props = NativeStackScreenProps<RootStackParamList, "Main">;
 
 export default function Main({ route }: Props) {
-  const { user } = useUser();
   const [nearbyUsers, setNearbyUsers] = useState([]);
   const [messages, setMessages] = useState<IMessage[]>([]);
   const { sendJsonMessage } = useWebSocket(
@@ -53,6 +52,9 @@ export default function Main({ route }: Props) {
               if (data.data.tempId) {
                 setMessages((prev) => {
                   const temp = [...prev];
+                  if (temp.length >= 50) {
+                    temp.pop();
+                  }
                   const index = temp.findIndex(
                     (item) => item._id === data.data.tempId
                   );
@@ -66,7 +68,13 @@ export default function Main({ route }: Props) {
                   return temp;
                 });
               } else {
-                setMessages((prev) => [...prev, data.data]);
+                setMessages((prev) => {
+                  const temp = [...prev];
+                  if (temp.length >= 50) {
+                    temp.pop();
+                  }
+                  return [...prev, data.data];
+                });
               }
               break;
             }

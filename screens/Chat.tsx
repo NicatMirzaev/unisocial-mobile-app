@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { Dimensions, Platform, StyleSheet, View } from "react-native";
@@ -20,16 +20,36 @@ import { useWebSocket } from "../context/ws";
 import { ALERT_TYPE, Toast } from "react-native-alert-notification";
 import { NavigationProp } from "@react-navigation/native";
 import { ResizeMode, Video } from "expo-av";
+import { fetchData } from "../lib/helpers";
 
 interface Props {
   navigation: NavigationProp<any, any>;
 }
 
 export default function Chat({ navigation }: Props) {
+  const [loading, setLoading] = useState(false);
   const { user } = useUser();
   const { messages, setMessages, sendJsonMessage } = useWebSocket();
   const themeColors = useTheme();
   const { theme } = useThemeContext();
+
+  const getMessages = (cursor: string | null = null) => {
+    const query = cursor ? `?cursor=${cursor}` : "";
+    return fetchData(`/messages${query}`);
+  };
+
+  const cursor = messages.length
+    ? (messages[messages.length - 1] as any).messageId ||
+      messages[messages.length - 1]._id
+    : null;
+
+  useEffect(() => {
+    getMessages().then((data) => {
+      if (data.success) {
+        setMessages(data.data);
+      }
+    });
+  }, []);
 
   const renderInputToolbar = (props: InputToolbarProps<IMessage>) => {
     return (
@@ -145,6 +165,20 @@ export default function Chat({ navigation }: Props) {
     }
   };
 
+  const loadMessages = () => {
+    setLoading(true);
+    getMessages(cursor)
+      .then((data) => {
+        console.log(data.data);
+        if (data.success) {
+          setMessages((prev: IMessage[]) => [...data.data, ...prev]);
+        }
+      })
+      .finally(() => setLoading(false));
+  };
+
+  console.log(cursor);
+
   return (
     <View style={{ flex: 1, marginBottom: 10 }}>
       <Appbar.Header>
@@ -158,6 +192,10 @@ export default function Chat({ navigation }: Props) {
         scrollToBottom
         keyboardShouldPersistTaps="never"
         alwaysShowSend
+        loadEarlier
+        infiniteScroll
+        isLoadingEarlier={loading}
+        onLoadEarlier={loadMessages}
         renderSend={renderSend}
         onPressAvatar={(user) =>
           navigation.navigate("Profile", { userId: user._id })
