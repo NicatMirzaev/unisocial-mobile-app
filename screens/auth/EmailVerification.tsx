@@ -7,7 +7,7 @@ import {
   Text,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   CodeField,
@@ -62,6 +62,7 @@ const EmailVerification = ({ route }: Props) => {
   const { email } = route.params;
   const { setUser } = useUser();
   const [value, setValue] = useState("");
+  const [counter, setCounter] = useState(120);
   const [submitting, setSubmitting] = useState(false);
   const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
@@ -120,6 +121,35 @@ const EmailVerification = ({ route }: Props) => {
     );
   };
 
+  useEffect(() => {
+    const timer =
+      counter > 0 && setInterval(() => setCounter(counter - 1), 1000);
+    return () => clearInterval(timer as any);
+  }, [counter]);
+
+  const resend = () => {
+    if (!email || counter > 0) return;
+    fetchData("/auth/send-verification-code", { email }, "POST", false)
+      .then((data) => {
+        console.log(data);
+        if (data.success) {
+          setCounter(120);
+          Toast.show({
+            type: ALERT_TYPE.SUCCESS,
+            title: "შეტყობინება",
+            textBody: data.message,
+          });
+        }
+      })
+      .catch(({ data }) => {
+        Toast.show({
+          type: ALERT_TYPE.DANGER,
+          title: "შეცდომა",
+          textBody: data.message,
+        });
+      });
+  };
+
   const onSubmit = () => {
     if (!email) return;
     setSubmitting(true);
@@ -174,7 +204,11 @@ const EmailVerification = ({ route }: Props) => {
         >
           გაგრძელება
         </Button>
-        <Button icon={"reload"}>თავიდან გამოგზავნა</Button>
+        <Button icon={"reload"} onPress={resend} disabled={counter > 0}>
+          {counter > 0
+            ? `თავიდან გამოგზავნა (${counter} წმ)`
+            : "თავიდან გამოგზავნა"}
+        </Button>
       </View>
     </SafeAreaView>
   );
