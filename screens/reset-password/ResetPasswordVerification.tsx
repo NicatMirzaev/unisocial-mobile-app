@@ -1,4 +1,3 @@
-import * as SecureStore from "expo-secure-store";
 import {
   Animated,
   Platform,
@@ -15,12 +14,11 @@ import {
   useBlurOnFulfill,
   useClearByFocusCell,
 } from "react-native-confirmation-code-field";
-import { Button, Text as PaperText } from "react-native-paper";
+import { Appbar, Button, Text as PaperText } from "react-native-paper";
 import { fetchData } from "../../lib/helpers";
 import { ALERT_TYPE, Toast } from "react-native-alert-notification";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types";
-import { useUser } from "../../context/user";
 
 const { Value, Text: AnimatedText } = Animated;
 
@@ -56,11 +54,13 @@ const animateCell = ({
   ]).start();
 };
 
-type Props = NativeStackScreenProps<RootStackParamList, "EmailVerification">;
+type Props = NativeStackScreenProps<
+  RootStackParamList,
+  "ResetPasswordVerification"
+>;
 
-const EmailVerification = ({ route }: Props) => {
+const ResetPasswordVerification = ({ route, navigation }: Props) => {
   const { email } = route.params;
-  const { setUser } = useUser();
   const [value, setValue] = useState("");
   const [counter, setCounter] = useState(120);
   const [submitting, setSubmitting] = useState(false);
@@ -129,7 +129,7 @@ const EmailVerification = ({ route }: Props) => {
 
   const resend = () => {
     if (!email || counter > 0) return;
-    fetchData("/auth/send-verification-code", { email }, "POST", false)
+    fetchData("/auth/reset-password", { email }, "POST", false)
       .then((data) => {
         if (data.success) {
           setCounter(120);
@@ -152,11 +152,15 @@ const EmailVerification = ({ route }: Props) => {
   const onSubmit = () => {
     if (!email) return;
     setSubmitting(true);
-    fetchData("/auth/verify", { email, code: value }, "POST", false)
+    fetchData(
+      "/auth/reset-password/verify",
+      { email, code: value },
+      "POST",
+      false
+    )
       .then(async (data) => {
         if (data.success) {
-          await SecureStore.setItemAsync("token", data.token);
-          setUser(data.user);
+          navigation.navigate("NewPassword", { token: data.token });
         }
       })
       .catch(({ data }) => {
@@ -171,16 +175,14 @@ const EmailVerification = ({ route }: Props) => {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
-      <PaperText
-        variant="headlineSmall"
-        style={{ marginVertical: 20, marginLeft: "auto", marginRight: "auto" }}
-      >
-        ვერიფიკაცია
-      </PaperText>
+    <>
+      <Appbar.Header>
+        <Appbar.BackAction onPress={() => navigation.goBack()} />
+        <Appbar.Content title="ვერიფიკაცია" />
+      </Appbar.Header>
       <Text style={styles.subTitle}>
-        გთხოვთ შეიყვანოთ თქვენ მიერ მითითებული{"\n"}
-        მეილზე გამოგზავნილი კოდი. კოდი აქტიური იქნება 5 წუთის განმავლობაში.
+        გთხოვთ შეიყვანოთ ელ.ფოსტაზე გამოგზავნილი კოდი. {"\n"}კოდი აქტიური იქნება
+        5 წუთის განმავლობაში.
       </Text>
 
       <CodeField
@@ -209,7 +211,7 @@ const EmailVerification = ({ route }: Props) => {
             : "თავიდან გამოგზავნა"}
         </Button>
       </View>
-    </SafeAreaView>
+    </>
   );
 };
 
@@ -266,4 +268,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EmailVerification;
+export default ResetPasswordVerification;

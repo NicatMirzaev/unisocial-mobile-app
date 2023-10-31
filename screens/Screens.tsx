@@ -12,6 +12,9 @@ import { ImagesView } from "./ImagesView";
 import { useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 import Profile from "./Profile";
+import ResetPassword from "./reset-password/ResetPassword";
+import ResetPasswordVerification from "./reset-password/ResetPasswordVerification";
+import NewPassword from "./reset-password/NewPassword";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -69,6 +72,16 @@ export default function Screens() {
             name="EmailVerification"
             component={EmailVerification}
             initialParams={{ email: "" }}
+          />
+          <Stack.Screen name="ResetPassword" component={ResetPassword} />
+          <Stack.Screen
+            name="ResetPasswordVerification"
+            component={ResetPasswordVerification}
+          />
+          <Stack.Screen
+            name="NewPassword"
+            component={NewPassword}
+            initialParams={{ token: "" }}
           />
         </Stack.Navigator>
       ) : null}

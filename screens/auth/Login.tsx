@@ -84,7 +84,7 @@ const LoginScreen = ({ navigation }: Props) => {
 
         <View style={styles.forgotPassword}>
           <TouchableOpacity
-            onPress={() => navigation.navigate("ForgotPassword")}
+            onPress={() => navigation.navigate("ResetPassword")}
           >
             <Text style={styles.label}>დაგავიწყდა პაროლი?</Text>
           </TouchableOpacity>

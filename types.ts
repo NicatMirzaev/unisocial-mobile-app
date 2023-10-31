@@ -2,6 +2,9 @@ export type RootStackParamList = {
   Main: { token: string };
   Login: undefined;
   Register: undefined;
+  ResetPassword: undefined;
+  ResetPasswordVerification: { email: string };
+  NewPassword: { token: string };
   EmailVerification: { email: string };
   ImagesView: { images: Photo[]; index: number };
   Profile: { userId: string };
