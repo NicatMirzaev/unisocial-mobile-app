@@ -80,7 +80,7 @@ export const SettingsModal = ({ onDismiss }: Props) => {
           }}
         >
           <TextInput
-            label="მიმდინარე პაროლი"
+            label="ძველი პაროლი"
             returnKeyType="next"
             value={values.currentPassword}
             secureTextEntry
