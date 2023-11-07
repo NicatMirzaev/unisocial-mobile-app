@@ -12,12 +12,15 @@ import { Button, DefaultTheme, Text, TextInput } from "react-native-paper";
 import { fetchData } from "../../lib/helpers";
 import { ALERT_TYPE, Toast } from "react-native-alert-notification";
 import { useUser } from "../../context/user";
+import { useModal } from "../../context/modal";
+import BlockedModal from "../../components/modals/Blocked";
 
 type Props = {
   navigation: NavigationProp<any, any>;
 };
 
 const LoginScreen = ({ navigation }: Props) => {
+  const { openModal } = useModal();
   const { setUser } = useUser();
   const [submitting, setSubmitting] = useState(false);
   const [email, setEmail] = useState("");
@@ -36,6 +39,13 @@ const LoginScreen = ({ navigation }: Props) => {
         const { data, status } = err;
         if (status == 401) {
           navigation.navigate("EmailVerification", { email });
+        } else if (status == 403) {
+          openModal(
+            <BlockedModal
+              reason={data.data.reason}
+              unblockAt={new Date(data.data.unblockAt)}
+            />
+          );
         } else {
           Toast.show({
             type: ALERT_TYPE.DANGER,

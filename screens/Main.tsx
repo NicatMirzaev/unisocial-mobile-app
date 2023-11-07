@@ -102,7 +102,7 @@ export default function Main({ route }: Props) {
       let location = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.Highest,
-          timeInterval: 5000,
+          timeInterval: 3000,
         },
         (newLocation) => {
           sendJsonMessage({

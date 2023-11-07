@@ -46,11 +46,7 @@ export const SettingsModal = ({ onDismiss }: Props) => {
             title: "შეტყობინება",
             textBody: data.message,
           });
-          setMode("main");
-          setValues({
-            currentPassword: "",
-            newPassword: "",
-          });
+          logout();
         }
       })
       .catch(({ data }) => {
