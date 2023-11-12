@@ -169,15 +169,12 @@ export default function Chat({ navigation }: Props) {
     setLoading(true);
     getMessages(cursor)
       .then((data) => {
-        console.log(data.data);
         if (data.success) {
           setMessages((prev: IMessage[]) => [...data.data, ...prev]);
         }
       })
       .finally(() => setLoading(false));
   };
-
-  console.log(cursor);
 
   return (
     <View style={{ flex: 1, marginBottom: 10 }}>

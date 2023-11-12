@@ -15,6 +15,8 @@ export interface User {
   fullName: string;
   profileImg: string;
   program: string;
+  isPremium: string;
+  nextBillingDate: Date | null;
 }
 
 export interface Photo {

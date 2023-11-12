@@ -112,7 +112,14 @@ export default function UserProfile({ navigation, userId, data }: Props) {
         </View>
       )}
       <View>
-        <Surface style={styles.surface} elevation={3}>
+        <Surface
+          style={
+            userData?.isPremium
+              ? [styles.surface, styles.premiumBorder]
+              : [styles.surface]
+          }
+          elevation={3}
+        >
           {!userData ? (
             <View style={styles.loading}>
               <ActivityIndicator size="large" />
@@ -138,7 +145,19 @@ export default function UserProfile({ navigation, userId, data }: Props) {
                 />
               </TouchableOpacity>
               <View style={styles.profileDetails}>
-                <Text variant="titleMedium">{userData?.fullName}</Text>
+                <Text
+                  variant="titleMedium"
+                  style={{ display: "flex", alignItems: "center" }}
+                >
+                  {userData?.fullName}
+                  {userData.isPremium && (
+                    <Icon
+                      name="professional-hexagon"
+                      size={18}
+                      color={"#FFD700"}
+                    />
+                  )}
+                </Text>
                 <View style={styles.education}>
                   <Icon name="town-hall" size={18} color={"#C5C6D0"} />
                   <Text variant="labelSmall">
@@ -271,5 +290,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     alignItems: "center",
     justifyContent: "center",
+  },
+  premiumBorder: {
+    borderColor: "#FFD700",
+    borderWidth: 1,
   },
 });

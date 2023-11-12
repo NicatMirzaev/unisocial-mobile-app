@@ -7,12 +7,13 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   View,
+  Keyboard,
 } from "react-native";
 import { Button, DefaultTheme, Text, TextInput } from "react-native-paper";
 import { fetchData } from "../../lib/helpers";
 import { ALERT_TYPE, Toast } from "react-native-alert-notification";
 import { useUser } from "../../context/user";
-import { useModal } from "../../context/modal";
+import { useDialog } from "../../context/dialog";
 import BlockedModal from "../../components/modals/Blocked";
 
 type Props = {
@@ -20,7 +21,7 @@ type Props = {
 };
 
 const LoginScreen = ({ navigation }: Props) => {
-  const { openModal } = useModal();
+  const { openDialog, closeDialog } = useDialog();
   const { setUser } = useUser();
   const [submitting, setSubmitting] = useState(false);
   const [email, setEmail] = useState("");
@@ -40,10 +41,14 @@ const LoginScreen = ({ navigation }: Props) => {
         if (status == 401) {
           navigation.navigate("EmailVerification", { email });
         } else if (status == 403) {
-          openModal(
+          Keyboard.dismiss();
+          openDialog(
             <BlockedModal
               reason={data.data.reason}
-              unblockAt={new Date(data.data.unblockAt)}
+              unblockAt={
+                data.data.unblockAt ? new Date(data.data.unblockAt) : null
+              }
+              closeDialog={closeDialog}
             />
           );
         } else {

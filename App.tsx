@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchData } from "./lib/helpers";
 import { CombinedDarkTheme, CombinedDefaultTheme } from "./themes";
 import { ThemeContext } from "./context/theme";
-import { ModalProvider } from "./context/modal";
+import { DialogProvider } from "./context/dialog";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -79,10 +79,10 @@ export default function App() {
                 },
               ]}
             >
-              <ModalProvider>
+              <DialogProvider>
                 <StatusBar style={theme === "dark" ? "light" : "dark"} />
                 <Screens />
-              </ModalProvider>
+              </DialogProvider>
             </AlertNotificationRoot>
           </UserProvider>
         </PaperProvider>

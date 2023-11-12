@@ -1,39 +1,35 @@
 import { View } from "react-native";
-import { Text } from "react-native-paper";
+import { Button, Dialog, Text } from "react-native-paper";
 import { formatDate } from "../../lib/helpers";
+import { useDialog } from "../../context/dialog";
 
 export default function BlockedModal({
   reason,
   unblockAt,
+  closeDialog,
 }: {
   reason: string;
-  unblockAt: Date;
+  unblockAt: Date | null;
+  closeDialog: () => void;
 }) {
   return (
     <>
-      <Text variant="titleMedium" style={{ textAlign: "center" }}>
-        თქვენი პროფილი დაბლოკილია!
-      </Text>
-      <Text
-        variant="labelSmall"
-        style={{
-          textAlign: "center",
-          paddingVertical: 10,
-        }}
-      >
-        სამწუხაროდ თქვენ ვერ გააგრძელებთ აპლიკაციის გამოყენებას რადგან თქვენი
-        პროფილი დაბლოკილია საზოგადოების წესების დარღვევის გამო.
-      </Text>
-      {reason && (
-        <Text variant="labelSmall" style={{ textAlign: "center" }}>
-          მიზეზი: {reason}
+      <Dialog.Title>თქვენი პროფილი დაბლოკილია!</Dialog.Title>
+      <Dialog.Content>
+        <Text variant="labelSmall">
+          სამწუხაროდ თქვენ ვერ გააგრძელებთ აპლიკაციის გამოყენებას რადგან თქვენი
+          პროფილი დაბლოკილია წესების დარღვევის გამო.
         </Text>
-      )}
-      {unblockAt && (
-        <Text variant="labelSmall" style={{ textAlign: "center" }}>
-          განბლოკვის თარიღი: {formatDate(unblockAt)}
-        </Text>
-      )}
+        {reason && <Text variant="labelSmall">მიზეზი: {reason}</Text>}
+        {unblockAt && (
+          <Text variant="labelSmall">
+            განბლოკვის თარიღი: {formatDate(unblockAt)}
+          </Text>
+        )}
+      </Dialog.Content>
+      <Dialog.Actions>
+        <Button onPress={closeDialog}>OK</Button>
+      </Dialog.Actions>
     </>
   );
 }
