@@ -14,6 +14,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types";
 import { IMessage } from "react-native-gifted-chat";
 import { useUser } from "../context/user";
+import { ungroup } from "../lib/helpers";
 
 const Tab = createBottomTabNavigator();
 
@@ -76,6 +77,17 @@ export default function Main({ route }: Props) {
                   return [...prev, data.data];
                 });
               }
+              break;
+            }
+            case "reaction": {
+              setMessages((prev) =>
+                prev.map((message) => {
+                  if (message._id === data.data._id)
+                    return { ...message, reactions: data.data.reactions };
+
+                  return message;
+                })
+              );
               break;
             }
           }

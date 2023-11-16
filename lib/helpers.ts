@@ -54,3 +54,10 @@ export const formatDate = (date: Date) => {
   const formattedDate = `${year}-${month}-${day}`;
   return formattedDate;
 };
+
+export const ungroup = (arr: { [key: string]: any[] }): any[] => {
+  let result: any[] = [];
+  Object.keys(arr).forEach((key) => (result = [...result, ...arr[key]]));
+
+  return result;
+};

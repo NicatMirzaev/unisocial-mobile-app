@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { Dimensions, Platform, StyleSheet, View } from "react-native";
@@ -12,8 +12,17 @@ import {
   Composer,
   Send,
   MessageVideoProps,
+  BubbleProps,
+  Bubble,
+  MessageProps,
 } from "react-native-gifted-chat";
-import { Appbar, IconButton, useTheme } from "react-native-paper";
+import {
+  Appbar,
+  IconButton,
+  Surface,
+  Text,
+  useTheme,
+} from "react-native-paper";
 import { useThemeContext } from "../context/theme";
 import { useUser } from "../context/user";
 import { useWebSocket } from "../context/ws";
@@ -21,13 +30,27 @@ import { ALERT_TYPE, Toast } from "react-native-alert-notification";
 import { NavigationProp } from "@react-navigation/native";
 import { ResizeMode, Video } from "expo-av";
 import { fetchData } from "../lib/helpers";
+import { BottomSheet, BottomSheetRef } from "react-native-sheet";
+import EmojiPicker, { emojiFromUtf16 } from "rn-emoji-picker";
+import { emojis } from "rn-emoji-picker/dist/data";
+import { Emoji } from "rn-emoji-picker/dist/interfaces";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import ReplyMessageBar from "../components/ui/ReplyMessageBar";
+import ChatMessageBox from "../components/ui/ChatMessageBox";
 
 interface Props {
   navigation: NavigationProp<any, any>;
 }
 
+const WIDTH = Dimensions.get("window").width;
+const HEIGHT = Dimensions.get("window").height;
+
 export default function Chat({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
+  const [emojiMessageId, setEmojiMessageId] = useState<any>(null);
+  const [recentEmojis, setRecentEmojis] = useState<Emoji[]>([]);
+  const [replyMessage, setReplyMessage] = useState<IMessage | null>(null);
+  const bottomSheet = useRef<BottomSheetRef>(null);
   const { user } = useUser();
   const { messages, setMessages, sendJsonMessage } = useWebSocket();
   const themeColors = useTheme();
@@ -49,6 +72,10 @@ export default function Chat({ navigation }: Props) {
         setMessages(data.data);
       }
     });
+
+    AsyncStorage.getItem("recent_emojis").then((value) => {
+      setRecentEmojis(value ? JSON.parse(value) : []);
+    });
   }, []);
 
   const renderInputToolbar = (props: InputToolbarProps<IMessage>) => {
@@ -59,13 +86,23 @@ export default function Chat({ navigation }: Props) {
           backgroundColor: themeColors.colors.elevation.level5,
           marginHorizontal: 5,
           borderTopWidth: 0,
-          flexDirection: "row",
+          flexDirection: replyMessage ? "column-reverse" : "row",
           alignItems: "center",
           borderRadius: 20,
         }}
       />
     );
   };
+
+  const renderMessage = useCallback((props: MessageProps<IMessage>) => {
+    return (
+      <ChatMessageBox
+        {...props}
+        setReplyOnSwipe={setReplyMessage}
+        clearReply={() => setReplyMessage(null)}
+      />
+    );
+  }, []);
 
   const onSend = useCallback((message: IMessage[] = []) => {
     setMessages((prev: IMessage[]) => [
@@ -114,6 +151,59 @@ export default function Chat({ navigation }: Props) {
       />
     );
   }, []);
+
+  const renderAccessory = useCallback(() => {
+    return replyMessage ? (
+      <ReplyMessageBar
+        message={replyMessage}
+        clearReply={() => setReplyMessage(null)}
+      />
+    ) : null;
+  }, [replyMessage]);
+
+  const renderBubble = useCallback(
+    (props: BubbleProps<IMessage>) => {
+      const isLeft = props.currentMessage?.user._id === user?._id;
+      const message = props.currentMessage as any;
+      const reactions = Object.keys(message.reactions || {});
+
+      return (
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+          }}
+        >
+          <Bubble {...props} />
+          {reactions.length ? (
+            <View style={{ paddingRight: !isLeft ? 60 : 0 }}>
+              <Surface
+                elevation={2}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 10,
+                  width: 35 * reactions.length,
+                  height: 25,
+                }}
+              >
+                {reactions.map((reaction) => (
+                  <Text key={reaction}>{emojiFromUtf16(reaction)}</Text>
+                ))}
+                <Text style={{ marginLeft: 2 }}>
+                  {Object.values(message.reactions).flat().length}
+                </Text>
+              </Surface>
+            </View>
+          ) : null}
+        </View>
+      );
+    },
+    [messages]
+  );
 
   const sendMediaToServer = (media: ImagePicker.ImagePickerAsset) => {
     const msg = {
@@ -176,11 +266,38 @@ export default function Chat({ navigation }: Props) {
       .finally(() => setLoading(false));
   };
 
+  const onReaction = (emoji: Emoji) => {
+    bottomSheet.current?.hide();
+    sendJsonMessage({
+      type: "reaction",
+      data: { _id: emojiMessageId, emoji: emoji.unified },
+    });
+  };
+
   return (
     <View style={{ flex: 1, marginBottom: 10 }}>
       <Appbar.Header>
         <Appbar.Content title="ჩატი" />
       </Appbar.Header>
+      <BottomSheet
+        height={HEIGHT / 1.5}
+        ref={bottomSheet}
+        colorScheme={theme as "light" | "dark"}
+      >
+        <EmojiPicker
+          emojis={emojis}
+          recent={recentEmojis}
+          autoFocus={false}
+          loading={false}
+          darkMode={theme === "dark"}
+          perLine={7}
+          onSelect={onReaction}
+          onChangeRecent={(recent) => {
+            setRecentEmojis(recent),
+              AsyncStorage.setItem("recent_emojis", JSON.stringify(recent));
+          }}
+        />
+      </BottomSheet>
       <GiftedChat
         messages={messages.sort(
           (a, b) =>
@@ -199,10 +316,17 @@ export default function Chat({ navigation }: Props) {
         }
         renderComposer={renderComposer}
         renderMessageVideo={renderVideo}
+        renderBubble={renderBubble}
+        renderAccessory={renderAccessory}
+        renderMessage={renderMessage}
         messagesContainerStyle={{ paddingBottom: 10 }}
         renderUsernameOnMessage
         onSend={onSend}
         bottomOffset={Platform.OS === "ios" ? 110 : undefined}
+        onLongPress={(_, message) => {
+          setEmojiMessageId(message._id);
+          bottomSheet.current?.show();
+        }}
         renderInputToolbar={renderInputToolbar}
         user={{
           _id: user?._id as string,
@@ -217,8 +341,8 @@ export default function Chat({ navigation }: Props) {
 const styles = StyleSheet.create({
   video: {
     alignSelf: "center",
-    width: Dimensions.get("window").width / 2,
-    height: Dimensions.get("window").width / 2,
+    width: WIDTH / 2,
+    height: WIDTH / 2,
     borderRadius: 15,
     marginBottom: 5,
   },
