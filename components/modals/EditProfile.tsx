@@ -108,6 +108,7 @@ export const EditProfile = ({ onDismiss, user }: Props) => {
         contentContainerStyle={{
           backgroundColor: theme.colors.background,
           padding: 20,
+          borderRadius: 10,
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",

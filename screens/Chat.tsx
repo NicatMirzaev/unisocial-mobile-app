@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
-import { Dimensions, Platform, StyleSheet, View } from "react-native";
+import {
+  Dimensions,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {
   GiftedChat,
   IMessage,
@@ -37,6 +43,7 @@ import { Emoji } from "rn-emoji-picker/dist/interfaces";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ReplyMessageBar from "../components/ui/ReplyMessageBar";
 import ChatMessageBox from "../components/ui/ChatMessageBox";
+import ReactionList from "../components/ui/ReactionList";
 
 interface Props {
   navigation: NavigationProp<any, any>;
@@ -50,6 +57,7 @@ export default function Chat({ navigation }: Props) {
   const [emojiMessageId, setEmojiMessageId] = useState<any>(null);
   const [recentEmojis, setRecentEmojis] = useState<Emoji[]>([]);
   const [replyMessage, setReplyMessage] = useState<IMessage | null>(null);
+  const [showReactions, setShowReactions] = useState(null);
   const bottomSheet = useRef<BottomSheetRef>(null);
   const { user } = useUser();
   const { messages, setMessages, sendJsonMessage } = useWebSocket();
@@ -177,7 +185,10 @@ export default function Chat({ navigation }: Props) {
         >
           <Bubble {...props} />
           {reactions.length ? (
-            <View style={{ paddingRight: !isLeft ? 60 : 0 }}>
+            <TouchableOpacity
+              style={{ paddingRight: !isLeft ? 60 : 0 }}
+              onPress={() => setShowReactions(message.reactions || {})}
+            >
               <Surface
                 elevation={2}
                 style={{
@@ -197,7 +208,7 @@ export default function Chat({ navigation }: Props) {
                   {Object.values(message.reactions).flat().length}
                 </Text>
               </Surface>
-            </View>
+            </TouchableOpacity>
           ) : null}
         </View>
       );
@@ -279,6 +290,12 @@ export default function Chat({ navigation }: Props) {
       <Appbar.Header>
         <Appbar.Content title="ჩატი" />
       </Appbar.Header>
+      {showReactions && (
+        <ReactionList
+          reactions={showReactions}
+          onClose={() => setShowReactions(null)}
+        />
+      )}
       <BottomSheet
         height={HEIGHT / 1.5}
         ref={bottomSheet}
@@ -308,6 +325,13 @@ export default function Chat({ navigation }: Props) {
         alwaysShowSend
         loadEarlier
         infiniteScroll
+        shouldUpdateMessage={(props, nextProps) => {
+          const prevMessage = props.currentMessage as any;
+          const nextMessage = nextProps.currentMessage as any;
+          if (prevMessage.update !== nextMessage.update) return true;
+
+          return false;
+        }}
         isLoadingEarlier={loading}
         onLoadEarlier={loadMessages}
         renderSend={renderSend}
@@ -322,7 +346,7 @@ export default function Chat({ navigation }: Props) {
         messagesContainerStyle={{ paddingBottom: 10 }}
         renderUsernameOnMessage
         onSend={onSend}
-        bottomOffset={Platform.OS === "ios" ? 110 : undefined}
+        bottomOffset={Platform.OS === "ios" ? 150 : undefined}
         onLongPress={(_, message) => {
           setEmojiMessageId(message._id);
           bottomSheet.current?.show();

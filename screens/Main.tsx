@@ -83,7 +83,11 @@ export default function Main({ route }: Props) {
               setMessages((prev) =>
                 prev.map((message) => {
                   if (message._id === data.data._id)
-                    return { ...message, reactions: data.data.reactions };
+                    return {
+                      ...message,
+                      update: ((message as any).update || 1) + 1,
+                      reactions: data.data.reactions,
+                    };
 
                   return message;
                 })

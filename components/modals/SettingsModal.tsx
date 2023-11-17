@@ -144,6 +144,7 @@ export const SettingsModal = ({ onDismiss }: Props) => {
         contentContainerStyle={{
           backgroundColor: themeSettings.colors.background,
           padding: 20,
+          borderRadius: 10,
           flexDirection: "column",
         }}
         style={{ padding: 10, marginBottom: 100 }}
