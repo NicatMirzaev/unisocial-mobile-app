@@ -12,6 +12,9 @@ type ReplyMessageBarProps = {
 
 const ReplyMessageBar = ({ clearReply, message }: ReplyMessageBarProps) => {
   const croppedText = useMemo(() => {
+    if (message.text === undefined) {
+      return "ფოტო / ვიდეო";
+    }
     if (message.text.length > 30) {
       return message.text.substring(0, 30) + "...";
     }

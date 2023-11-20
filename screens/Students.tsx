@@ -75,7 +75,23 @@ export default function Students({ navigation }: Props) {
                 />
               </View>
               <View style={styles.profileDetails}>
-                <Text variant="titleMedium">{item?.fullName}</Text>
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 10,
+                  }}
+                >
+                  <Text variant="titleMedium">{item?.fullName}</Text>
+                  {+item?.isPremium === 1 && (
+                    <Icon
+                      name="professional-hexagon"
+                      size={18}
+                      color={"#FFD700"}
+                    />
+                  )}
+                </View>
                 <View style={styles.education}>
                   <Icon name="town-hall" size={18} color={"#C5C6D0"} />
                   <Text variant="labelSmall">

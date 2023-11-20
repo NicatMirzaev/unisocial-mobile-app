@@ -44,6 +44,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import ReplyMessageBar from "../components/ui/ReplyMessageBar";
 import ChatMessageBox from "../components/ui/ChatMessageBox";
 import ReactionList from "../components/ui/ReactionList";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 interface Props {
   navigation: NavigationProp<any, any>;
@@ -112,16 +113,41 @@ export default function Chat({ navigation }: Props) {
     );
   }, []);
 
-  const onSend = useCallback((message: IMessage[] = []) => {
-    setMessages((prev: IMessage[]) => [
-      ...prev,
-      ...message.map((message) => ({ ...message, pending: true })),
-    ]);
-    sendJsonMessage({
-      type: "message",
-      data: { type: "text", message: message[0].text, tempId: message[0]._id },
-    });
-  }, []);
+  const onSend = useCallback(
+    (message: IMessage[] = []) => {
+      setMessages((prev: IMessage[]) => [
+        ...prev,
+        ...message.map((message) => ({ ...message, pending: true })),
+      ]);
+      let data = {
+        type: "text",
+        message: message[0].text,
+        tempId: message[0]._id,
+      } as any;
+
+      if (replyMessage) {
+        const type = replyMessage.text
+          ? "text"
+          : replyMessage.video
+          ? "video"
+          : "image";
+        data = {
+          ...data,
+          reply: {
+            _id: replyMessage._id,
+            user: replyMessage.user,
+            [type]: replyMessage[type],
+          },
+        };
+        setReplyMessage(null);
+      }
+      sendJsonMessage({
+        type: "message",
+        data,
+      });
+    },
+    [replyMessage]
+  );
 
   const renderSend = useCallback((props: SendProps<IMessage>) => {
     return (
@@ -171,7 +197,7 @@ export default function Chat({ navigation }: Props) {
 
   const renderBubble = useCallback(
     (props: BubbleProps<IMessage>) => {
-      const isLeft = props.currentMessage?.user._id === user?._id;
+      const isLeft = props.currentMessage?.user._id !== user?._id;
       const message = props.currentMessage as any;
       const reactions = Object.keys(message.reactions || {});
 
@@ -183,10 +209,54 @@ export default function Chat({ navigation }: Props) {
             alignItems: "flex-end",
           }}
         >
+          {message.reply && (
+            <View
+              style={{
+                position: "relative",
+                marginTop: 40,
+                width: "100%",
+              }}
+            >
+              <Surface
+                elevation={1}
+                style={{
+                  borderRadius: 10,
+                  height: 30,
+                  padding: 5,
+                  justifyContent: "center",
+                  marginTop: 5,
+                }}
+              >
+                {message.reply.text ? (
+                  <Text style={{ fontSize: 11, color: "rgb(100 116 139)" }}>
+                    {message.reply.text.substring(0, 30)}
+                  </Text>
+                ) : (
+                  <View
+                    style={{
+                      flex: 1,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 10,
+                    }}
+                  >
+                    <Icon
+                      name="attachment"
+                      size={18}
+                      color={"rgb(100 116 139)"}
+                    />
+                    <Text style={{ fontSize: 11, color: "rgb(100 116 139)" }}>
+                      ფოტო / ვიდეო
+                    </Text>
+                  </View>
+                )}
+              </Surface>
+            </View>
+          )}
           <Bubble {...props} />
           {reactions.length ? (
             <TouchableOpacity
-              style={{ paddingRight: !isLeft ? 60 : 0 }}
+              style={{ paddingRight: isLeft ? 60 : 0 }}
               onPress={() => setShowReactions(message.reactions || {})}
             >
               <Surface
@@ -346,7 +416,7 @@ export default function Chat({ navigation }: Props) {
         messagesContainerStyle={{ paddingBottom: 10 }}
         renderUsernameOnMessage
         onSend={onSend}
-        bottomOffset={Platform.OS === "ios" ? 150 : undefined}
+        bottomOffset={Platform.OS === "ios" ? 115 : undefined}
         onLongPress={(_, message) => {
           setEmojiMessageId(message._id);
           bottomSheet.current?.show();

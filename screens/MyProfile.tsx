@@ -8,6 +8,8 @@ import { EditProfile } from "../components/modals/EditProfile";
 import { SettingsModal } from "../components/modals/SettingsModal";
 import UserProfile from "../components/Profile";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { useDialog } from "../context/dialog";
+import PremuimModal from "../components/modals/Premium";
 
 type Props = {
   navigation: NavigationProp<any, any>;
@@ -17,6 +19,7 @@ export default function MyProfile({ navigation }: Props) {
   const [showSettingModal, setShowSettingModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const { user } = useUser();
+  const { openDialog, closeDialog } = useDialog();
 
   return (
     <>
@@ -57,16 +60,16 @@ export default function MyProfile({ navigation }: Props) {
         visible={!user?.isPremium}
         actions={[
           {
-            label: "გამოწერა",
-            onPress: () => {},
+            label: "დეტალურად",
+            onPress: () =>
+              openDialog(<PremuimModal closeDialog={closeDialog} />),
           },
         ]}
         icon={({ size }) => (
           <Icon name="professional-hexagon" size={size} color={"#FFD700"} />
         )}
       >
-        გადადი Premium-ზე და მიიღე გაუმჯობესებული unisocial გამოცდილება თვეში
-        მხოლოდ 15 ლარად.
+        გადადი Premium-ზე და მიიღე გაუმჯობესებული unisocial გამოცდილება.
       </Banner>
 
       <UserProfile

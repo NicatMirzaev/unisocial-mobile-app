@@ -50,6 +50,7 @@ export default function Main({ route }: Props) {
               break;
             }
             case "message": {
+              console.log(data.data);
               if (data.data.tempId) {
                 setMessages((prev) => {
                   const temp = [...prev];

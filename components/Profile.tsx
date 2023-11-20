@@ -40,6 +40,7 @@ export default function UserProfile({ navigation, userId, data }: Props) {
       setUserData(data as User);
     } else {
       fetchData(`/users/${userId}`).then(({ data }) => {
+        console.log(data);
         setUserData(data);
       });
     }
@@ -112,14 +113,7 @@ export default function UserProfile({ navigation, userId, data }: Props) {
         </View>
       )}
       <View>
-        <Surface
-          style={
-            userData?.isPremium
-              ? [styles.surface, styles.premiumBorder]
-              : [styles.surface]
-          }
-          elevation={3}
-        >
+        <Surface style={styles.surface} elevation={3}>
           {!userData ? (
             <View style={styles.loading}>
               <ActivityIndicator size="large" />
@@ -290,9 +284,5 @@ const styles = StyleSheet.create({
     bottom: 0,
     alignItems: "center",
     justifyContent: "center",
-  },
-  premiumBorder: {
-    borderColor: "#FFD700",
-    borderWidth: 1,
   },
 });
