@@ -1,10 +1,33 @@
 import { Button, Dialog, List, Text } from "react-native-paper";
+import * as Linking from "expo-linking";
+import { useState } from "react";
+import { fetchData } from "../../lib/helpers";
+import { ALERT_TYPE, Toast } from "react-native-alert-notification";
 
 export default function PremuimModal({
   closeDialog,
 }: {
   closeDialog: () => void;
 }) {
+  const [loading, setLoading] = useState(false);
+
+  const onSubscribe = () => {
+    setLoading(true);
+    fetchData("/subscriptions/subscribe", {}, "POST")
+      .then((data) => {
+        if (data.success) {
+          Linking.openURL(data.transactionUrl);
+        }
+      })
+      .catch(({ data }) => {
+        Toast.show({
+          type: ALERT_TYPE.DANGER,
+          title: "შეცდომა",
+          textBody: data.message,
+        });
+      })
+      .finally(() => setLoading(false));
+  };
   return (
     <>
       <Dialog.Title>პრემიუმი თვეში მხოლოდ 15 ლარად!</Dialog.Title>
@@ -42,7 +65,9 @@ export default function PremuimModal({
         </List.Section>
       </Dialog.Content>
       <Dialog.Actions>
-        <Button onPress={() => {}}>გამოწერა</Button>
+        <Button onPress={onSubscribe} loading={loading} disabled={loading}>
+          გამოწერა
+        </Button>
       </Dialog.Actions>
     </>
   );

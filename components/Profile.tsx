@@ -40,7 +40,6 @@ export default function UserProfile({ navigation, userId, data }: Props) {
       setUserData(data as User);
     } else {
       fetchData(`/users/${userId}`).then(({ data }) => {
-        console.log(data);
         setUserData(data);
       });
     }

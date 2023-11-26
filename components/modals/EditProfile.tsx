@@ -7,7 +7,6 @@ import UserAvatar from "../ui/UserAvatar";
 import { useEffect, useState } from "react";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { TouchableOpacity } from "react-native";
-import { fetchData } from "../../lib/helpers";
 import { useUser } from "../../context/user";
 import { ALERT_TYPE, Toast } from "react-native-alert-notification";
 
